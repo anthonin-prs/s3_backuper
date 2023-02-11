@@ -1,0 +1,14 @@
+{
+	"s3_bucket_name": "bucket-name",
+	"s3_region": "fr-par",
+	"log_file": "s3_backup.log",
+	"daily": [
+		"/path/to/file_or_folder"
+	],
+	"weekly": [
+                "/path/to/file_or_folder"
+	],
+	"monthly": [
+                "/path/to/file_or_folder"
+	]
+}
