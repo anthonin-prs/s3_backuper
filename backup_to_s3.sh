@@ -49,13 +49,13 @@ function backup_selected_frequency () {
 daily=$(backup_selected_frequency $config "daily")
 cat $log_file
 
-if [[ $(date +%u) == 0 ]]
+if [[ $(date +%u) == 0 ]] || [[ $1 == "ALL" ]]
 then
         weekly=$(backup_selected_frequency $config "weekly")
 	cat $log_file
 fi
 
-if [[ $(date +%d) == 1 ]]
+if [[ $(date +%d) == 1 ]] || [[ $1 == "ALL" ]]
 then
         monthly=$(backup_selected_frequency $config "monthly")
 	cat $log_file
