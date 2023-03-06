@@ -1,1 +1,2 @@
-config.json
+conf.json
+.gitsecret/keys/random_seed

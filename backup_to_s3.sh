@@ -1,15 +1,18 @@
 #!/bin/bash
 
-config=$(cat config.json | jq -r -c .)
+config=$(cat conf.json | jq -r -c .)
 
 bucket_name=$(echo $config | jq -rc .s3_bucket_name)
 region=$(echo $config | jq -rc .s3_region)
 log_file=$(echo $config | jq -rc .log_file)
 s3_endpoint="https://$bucket_name.s3.$region.scw.cloud"
+final_folder="/mnt/s3_$bucket_name"
+retention_days=$(echo $config | jq -rc .retention_days)
 
 function s3_backup () {
-	echo " × Uploaded" | tee -a $log_file
-	aws --endpoint-url $s3_endpoint s3 cp $1 s3://$2 --only-show-errors | tee -a $log_file
+	echo " × Copied" | tee -a $log_file
+	mkdir -p $(dirname "$final_folder/$2")
+	cp $1 "$final_folder/$2" | tee -a $log_file
 }
 
 
@@ -37,14 +40,41 @@ function backup_selected_frequency () {
 	        if [ -e "$file" ]; then
 	                echo "$file:" | tee -a $log_file
 	                final_file=$(zip_content $file)
-	                s3_backup $final_file "$frequency/$(echo $frequency)_$(date +%y-%m-%d)/$(basename $final_file)"
+	                s3_backup $final_file "$frequency/$(date +%y-%m-%d)/$(basename $final_file)"
 	                rm -rf $final_file
 	        fi
 	done
 	echo "Log file:" | tee -a $log_file
-        s3_backup $log_file "$frequency/$(echo $frequency)_$(date +%y-%m-%d)/$log_file"
+        s3_backup $log_file "$frequency/$(date +%y-%m-%d)/$log_file"
 
 }
+
+function cleanup () {
+	rm -rf $log_file
+	echo "Starting cleanup" | tee -a $log_file
+	echo $retention_days | jq -rc 'keys_unsorted' | jq -rc .[] | while read retention_policy
+	do
+		duration=$(echo $retention_days | jq -rc .$retention_policy)
+		echo "  - Cleaning up $retention_policy backups ($duration days):" | tee -a $log_file
+
+		backup_folder=$final_folder/$retention_policy
+
+		for path in $backup_folder/*
+		do
+			folder_name=$(basename $path)
+
+			let date_diff=(`date +%s `-`date +%s -d $folder_name`)/86400
+			if [[ $date_diff -gt $duration ]]
+			then
+				echo "      Deleting $backup_folder/$folder_name" | tee -a $log_file
+				rm -rf "$backup_folder/$folder_name"
+			fi
+		done
+	done
+	s3_backup $log_file "cleanups/$(date +%y-%m-%d)_cleanup.log"
+}
+
+cleanup
 
 daily=$(backup_selected_frequency $config "daily")
 cat $log_file
@@ -62,3 +92,4 @@ then
 fi
 
 rm -rf $log_file
+
