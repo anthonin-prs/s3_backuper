@@ -21,3 +21,8 @@ echo "# S3FS Backup Mount" >> /etc/fstab
 echo "s3fs#$bucket_name /mnt/s3_$bucket_name fuse _netdev,allow_other,use_path_request_style,url=https://s3.fr-par.scw.cloud/ 0 0" >> "/etc/fstab"
 
 mount -a
+
+mkdir "/mnt/s3_$bucket_name/daily"
+mkdir "/mnt/s3_$bucket_name/weekly"
+mkdir "/mnt/s3_$bucket_name/monthly"
+mkdir "/mnt/s3_$bucket_name/cleanups"
