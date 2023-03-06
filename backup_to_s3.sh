@@ -5,9 +5,9 @@ config=$(cat conf.json | jq -r -c .)
 bucket_name=$(echo $config | jq -rc .s3_bucket_name)
 region=$(echo $config | jq -rc .s3_region)
 log_file=$(echo $config | jq -rc .log_file)
+retention_days=$(echo $config | jq -rc .retention_days)
 s3_endpoint="https://$bucket_name.s3.$region.scw.cloud"
 final_folder="/mnt/s3_$bucket_name"
-retention_days=$(echo $config | jq -rc .retention_days)
 
 function s3_backup () {
 	echo " × Copied" | tee -a $log_file
