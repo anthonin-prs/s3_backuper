@@ -1,6 +1,6 @@
 #!/bin/bash
 
-apt-get install automake autotools-dev fuse g++ git libcurl4-gnutls-dev libfuse-dev libssl-dev libxml2-dev make pkg-config -y >/dev/null 2>&1
+apt-get install automake autotools-dev fuse g++ git libcurl4-gnutls-dev libfuse-dev libssl-dev libxml2-dev make pkg-config s3fs -y >/dev/null 2>&1
 
 config=$(cat conf.json | jq -r -c .)
 
